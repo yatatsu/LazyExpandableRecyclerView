@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 
-public abstract class LazyExpandableRecyclerAdapter<P extends Expandable, C, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
+public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
     extends RecyclerView.Adapter<ViewHolder> implements
     ParentViewHolder.ParentItemExpandCollapseListener {
 
