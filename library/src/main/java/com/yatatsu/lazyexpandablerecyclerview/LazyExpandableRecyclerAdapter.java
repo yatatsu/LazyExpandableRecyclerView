@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
 public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
-    extends RecyclerView.Adapter<ViewHolder> implements
-    ParentViewHolder.ParentItemExpandCollapseListener {
+    extends RecyclerView.Adapter<ViewHolder>
+    implements ParentViewHolder.ParentItemExpandCollapseListener {
 
   protected List<P> parentItems;
   protected List<Object> allItems;
@@ -121,20 +120,92 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
-  protected void expandParentItem(ParentItem<P> item, int parentIndex) {
-    // TODO
+  protected void expandParentItem(ParentItem<P> item, int position) {
+    if (!item.isExpanded()) {
+      item.setExpanded(true);
+      P parent = item.getItem();
+      int parentPosition = parentItems.indexOf(parent);
+      int childCount = expandableDataListener.getChildItemCount(parentPosition, parent);
+      if (childCount > 0) {
+        for (int i = 0; i < childCount; i++) {
+          C child = expandableDataListener.getChildItem(parentPosition, i, parent);
+          allItems.add(position + i + 1, new ChildItem<>(parent, child));
+        }
+        notifyItemRangeInserted(position + 1, childCount);
+      }
+
+      // TODO
+    }
   }
 
-  protected void collapseParentItem(ParentItem<P> item, int parentIndex) {
-    // TODO
+  protected void collapseParentItem(ParentItem<P> item, int position) {
+    if (item.isExpanded()) {
+      item.setExpanded(false);
+      P parent = item.getItem();
+      int parentPosition = parentItems.indexOf(parent);
+      int childCount = expandableDataListener.getChildItemCount(parentPosition, parent);
+      if (childCount > 0) {
+        for (int i = childCount; i > 0; i--) {
+          allItems.remove(position + i + 1);
+        }
+        notifyItemRangeRemoved(position + 1, childCount);
+      }
+
+      // TODO
+    }
+  }
+
+  private int getActualParentPosition(int parentPosition) {
+    if (parentPosition == 0) {
+      return 0;
+    } else if (parentPosition == parentItems.size() - 1) {
+      return allItems.size();
+    } else {
+      P beforeItem = parentItems.get(parentPosition - 1);
+      int beforeParentIndex = allItems.indexOf(new ParentItem<>(beforeItem));
+      return beforeParentIndex + expandableDataListener.getChildItemCount(parentPosition - 1,
+          beforeItem);
+    }
+  }
+
+  private int addParentItem(int position, int parentPosition, P parent) {
+    int sizeChanged = 1;
+    ParentItem<P> parentItem = new ParentItem<>(parent);
+    allItems.add(position, parentItem);
+    if (expandableDataListener.initiallyExpanded(parentPosition, parent)) {
+      parentItem.setExpanded(true);
+      int count = expandableDataListener.getChildItemCount(parentPosition, parent);
+      for (int i = 0; i < count; i++) {
+        sizeChanged += i;
+        C child = expandableDataListener.getChildItem(parentPosition, i, parent);
+        allItems.add(sizeChanged, new ChildItem<>(parent, child));
+      }
+    }
+    return sizeChanged;
   }
 
   public void notifyParentItemInserted(int parentPosition) {
-    // TODO
+    P parent = parentItems.get(parentPosition);
+    int parentIndex = getActualParentPosition(parentPosition);
+    int sizeChanged = addParentItem(parentIndex, parentPosition, parent);
+    notifyItemRangeInserted(parentIndex, sizeChanged);
   }
 
   public void notifyParentItemRangeInserted(int parentPositionStart, int itemCount) {
-    // TODO
+    P parent = parentItems.get(parentPositionStart);
+    int initialParentIndex = getActualParentPosition(parentPositionStart);
+
+    int sizeChanged = 0;
+    int indexChanged;
+    int parentIndex = initialParentIndex;
+    int parentPositionEnd = parentPositionStart + itemCount;
+    for (int i = parentPositionStart; i < parentPositionEnd; i++) {
+      P parentForIndex = parentItems.get(i);
+      indexChanged = addParentItem(parentIndex, i, parentForIndex);
+      parentIndex += indexChanged;
+      sizeChanged += indexChanged;
+    }
+    notifyItemRangeInserted(initialParentIndex, sizeChanged);
   }
 
   public void notifyParentItemRemoved(int parentPosition) {
@@ -161,7 +232,8 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     // TODO
   }
 
-  public void notifyChildItemRangeInserted(int parentPosition, int childPositionStart, int itemCount) {
+  public void notifyChildItemRangeInserted(int parentPosition, int childPositionStart,
+      int itemCount) {
     // TODO
   }
 
@@ -169,7 +241,8 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     // TODO
   }
 
-  public void notifyChildItemRangeRemoved(int parentPosition, int childPositionStart, int itemCount) {
+  public void notifyChildItemRangeRemoved(int parentPosition, int childPositionStart,
+      int itemCount) {
     // TODO
   }
 
@@ -177,7 +250,8 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     // TODO
   }
 
-  public void notifyChildItemRangeChanged(int parentPosition, int childPositionStart, int itemCount) {
+  public void notifyChildItemRangeChanged(int parentPosition, int childPositionStart,
+      int itemCount) {
     // TODO
   }
 
