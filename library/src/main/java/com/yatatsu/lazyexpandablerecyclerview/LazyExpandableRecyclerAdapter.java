@@ -84,13 +84,14 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
 
   @SuppressWarnings("unchecked") @Override
   public void onBindViewHolder(ViewHolder holder, int position) {
-    if (holder instanceof ParentViewHolder) {
+    Object item = allItems.get(position);
+    if (holder instanceof ParentViewHolder && item instanceof ParentItem) {
       ParentItem<P> parentItem = (ParentItem<P>) allItems.get(position);
       P parent = parentItem.getItem();
       PVH parentViewHolder = (PVH) holder;
       parentViewHolder.setExpanded(parentItem.isExpanded());
       onBindParentViewHolder(parentViewHolder, position, parent);
-    } else if (holder instanceof ChildViewHolder) {
+    } else if (holder instanceof ChildViewHolder && item instanceof ChildItem) {
       ChildItem<P, C> childItem = (ChildItem<P, C>) allItems.get(position);
       P parent = childItem.getParent();
       C child = childItem.getItem();
@@ -145,7 +146,7 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
       int parentPosition = parentItems.indexOf(parent);
       int childCount = expandableDataListener.getChildItemCount(parentPosition, parent);
       if (childCount > 0) {
-        for (int i = childCount; i > 0; i--) {
+        for (int i = childCount - 1; i >= 0; i--) {
           allItems.remove(position + i + 1);
         }
         notifyItemRangeRemoved(position + 1, childCount);
@@ -271,7 +272,7 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
         int childCount = expandableDataListener.getChildItemCount(i, parent);
         for (int j = 0; j < childCount; j++) {
           C child = expandableDataListener.getChildItem(i, j, parent);
-          allItems.add(new ChildItem<>(child, parent));
+          allItems.add(new ChildItem<>(parent, child));
         }
       }
     }

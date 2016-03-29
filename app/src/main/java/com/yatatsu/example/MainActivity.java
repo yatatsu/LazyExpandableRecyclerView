@@ -2,9 +2,9 @@ package com.yatatsu.example;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -36,11 +36,11 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override public String getChildItem(int parentPosition, int childPosition, String parent) {
-    return "child";
+    return parent + " child " + childPosition;
   }
 
   @Override public boolean initiallyExpanded(int parentPosition, String parent) {
-    return false;
+    return parentPosition == 0;
   }
 
   static class AlphabetViewHolder extends ParentViewHolder {
