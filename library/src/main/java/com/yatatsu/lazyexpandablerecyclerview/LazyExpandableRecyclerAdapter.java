@@ -185,6 +185,23 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     return sizeChanged;
   }
 
+  private int removeParentItem(int parentIndex) {
+    int sizeChanged = 1;
+    Object item = allItems.remove(parentIndex);
+    if (item instanceof ParentItem && ((ParentItem) item).isExpanded()) {
+      // remove until next parent
+      for (int i = 0, count = allItems.size() - parentIndex; i < count; i++) {
+        Object o = allItems.get(parentIndex);
+        if (o instanceof ParentItem) {
+          break;
+        }
+        allItems.remove(parentIndex);
+        sizeChanged++;
+      }
+    }
+    return sizeChanged;
+  }
+
   public void notifyParentItemInserted(int parentPosition) {
     P parent = parentItems.get(parentPosition);
     int parentIndex = getActualParentPosition(parentPosition);
@@ -193,7 +210,6 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   public void notifyParentItemRangeInserted(int parentPositionStart, int itemCount) {
-    P parent = parentItems.get(parentPositionStart);
     int initialParentIndex = getActualParentPosition(parentPositionStart);
 
     int sizeChanged = 0;
@@ -210,11 +226,18 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   public void notifyParentItemRemoved(int parentPosition) {
-    // TODO
+    int parentIndex = getActualParentPosition(parentPosition);
+    int sizeChanged = removeParentItem(parentIndex);
+    notifyItemRangeRemoved(parentIndex, sizeChanged);
   }
 
   public void notifyParentItemRangeRemoved(int parentPositionStart, int itemCount) {
-    // TODO
+    int parentIndex = getActualParentPosition(parentPositionStart);
+    int sizeChanged = 0;
+    for (int i = 0; i < itemCount; i++) {
+      sizeChanged += removeParentItem(parentIndex);
+    }
+    notifyItemRangeRemoved(parentIndex, sizeChanged);
   }
 
   public void notifyParentItemChanged(int parentPosition) {
