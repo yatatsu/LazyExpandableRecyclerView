@@ -29,9 +29,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   public interface ExpandCollapseListener {
-    void onItemExpanded(int position);
+    void onItemExpanded(int position, int parentPosition);
 
-    void onItemCollapsed(int position);
+    void onItemCollapsed(int position, int parentPosition);
   }
 
   public LazyExpandableRecyclerAdapter(
@@ -135,7 +135,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
         notifyItemRangeInserted(position + 1, childCount);
       }
 
-      // TODO
+      if (expandCollapseListener != null) {
+        expandCollapseListener.onItemExpanded(position, parentPosition);
+      }
     }
   }
 
@@ -152,7 +154,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
         notifyItemRangeRemoved(position + 1, childCount);
       }
 
-      // TODO
+      if (expandCollapseListener != null) {
+        expandCollapseListener.onItemCollapsed(position, parentPosition);
+      }
     }
   }
 
