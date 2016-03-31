@@ -157,16 +157,16 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   private int getActualParentPosition(int parentPosition) {
-    if (parentPosition == 0) {
-      return 0;
-    } else if (parentPosition == parentItems.size() - 1) {
-      return allItems.size();
-    } else {
-      P beforeItem = parentItems.get(parentPosition - 1);
-      int beforeParentIndex = allItems.indexOf(new ParentItem<>(beforeItem));
-      return beforeParentIndex + expandableDataListener.getChildItemCount(parentPosition - 1,
-          beforeItem);
+    int parentCount = 0;
+    for (int i = 0, count = allItems.size(); i < count; i++) {
+      if (allItems.get(i) instanceof ParentItem) {
+        parentCount++;
+        if (parentCount > parentPosition) {
+          return i;
+        }
+      }
     }
+    return -1;
   }
 
   private int addParentItem(int position, int parentPosition, P parent) {
