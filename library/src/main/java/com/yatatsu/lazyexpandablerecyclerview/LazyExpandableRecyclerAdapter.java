@@ -205,7 +205,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   private int changeParentItem(int position, int parentPosition, P parent) {
     int sizeChanged = 1;
     ParentItem parentItem = (ParentItem) allItems.get(position);
-    allItems.set(position, new ParentItem<>(parent));
+    ParentItem<P> newParentItem = new ParentItem<>(parent);
+    newParentItem.setExpanded(parentItem.isExpanded());
+    allItems.set(position, newParentItem);
     if (parentItem.isExpanded()) {
       int count = expandableDataListener.getChildItemCount(parentPosition, parent);
       for (int i = 0; i < count; i++) {
