@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentViewHolder, CVH extends ChildViewHolder>
+public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentViewHolder<P>, CVH extends ChildViewHolder<P, C>>
     extends RecyclerView.Adapter<ViewHolder>
     implements ParentViewHolder.ParentItemExpandCollapseListener {
 
@@ -90,12 +90,15 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
       P parent = parentItem.getItem();
       PVH parentViewHolder = (PVH) holder;
       parentViewHolder.setExpanded(parentItem.isExpanded());
+      parentViewHolder.setParentItem(parentItem);
       onBindParentViewHolder(parentViewHolder, position, parent);
     } else if (holder instanceof ChildViewHolder && item instanceof ChildItem) {
       ChildItem<P, C> childItem = (ChildItem<P, C>) allItems.get(position);
       P parent = childItem.getParent();
       C child = childItem.getItem();
-      onBindChildViewHolder((CVH) holder, position, parent, child);
+      CVH childHolder = (CVH) holder;
+      childHolder.setChildItem(childItem);
+      onBindChildViewHolder(childHolder, position, parent, child);
     }
   }
 

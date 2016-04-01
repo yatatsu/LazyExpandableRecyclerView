@@ -3,9 +3,10 @@ package com.yatatsu.lazyexpandablerecyclerview;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-public class ParentViewHolder extends RecyclerView.ViewHolder {
+public class ParentViewHolder<P> extends RecyclerView.ViewHolder {
   private boolean expanded;
   private ParentItemExpandCollapseListener expandCollapseListener;
+  private ParentItem<P> parentItem;
 
   public interface ParentItemExpandCollapseListener {
     void onExpanded(int position);
@@ -42,6 +43,14 @@ public class ParentViewHolder extends RecyclerView.ViewHolder {
 
   public void setExpanded(boolean expanded) {
     this.expanded = expanded;
+  }
+
+  public void setParentItem(ParentItem<P> item) {
+    this.parentItem = item;
+  }
+
+  public ParentItem<P> getParentItem() {
+    return parentItem;
   }
 
   protected void expandView() {
