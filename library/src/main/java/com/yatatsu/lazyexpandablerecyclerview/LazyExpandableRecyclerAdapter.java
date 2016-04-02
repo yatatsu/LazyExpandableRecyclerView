@@ -298,11 +298,18 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   public void notifyParentItemChanged(int parentPosition) {
+    notifyParentItemChanged(parentPosition, true);
+  }
+
+  public void notifyParentItemChanged(int parentPosition, boolean childItemChanged) {
     P parent = parentItems.get(parentPosition);
     int parentIndex = getActualParentPosition(parentPosition);
-    int sizedChanged = changeParentItem(parentIndex, parentPosition, parent);
-
-    notifyItemRangeChanged(parentIndex, sizedChanged);
+    if (childItemChanged) {
+      int sizedChanged = changeParentItem(parentIndex, parentPosition, parent);
+      notifyItemRangeChanged(parentIndex, sizedChanged);
+    } else {
+      notifyItemChanged(parentIndex);
+    }
   }
 
   public void notifyParentItemRangeChanged(int parentPositionStart, int itemCount) {
