@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
     return parentPosition == 0;
   }
 
-  static class AlphabetViewHolder extends ParentViewHolder {
+  static class AlphabetViewHolder extends ParentViewHolder<String> {
     ListItemSimpleBinding binding;
     public AlphabetViewHolder(Context context, ViewGroup parent, int resId) {
       super(LayoutInflater.from(context).inflate(resId, parent, false));
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
-  static class WordViewHolder extends ChildViewHolder {
+  static class WordViewHolder extends ChildViewHolder<String, String> {
     ListItemSimpleBinding binding;
     public WordViewHolder(Context context, ViewGroup parent, int resId) {
       super(LayoutInflater.from(context).inflate(resId, parent, false));
