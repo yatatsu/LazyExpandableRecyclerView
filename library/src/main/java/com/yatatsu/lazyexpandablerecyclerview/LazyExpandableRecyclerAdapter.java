@@ -71,9 +71,12 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
       case VIEW_TYPE_PARENT:
         PVH parentViewHolder = onCreateParentViewHolder(parent);
         parentViewHolder.setExpandCollapseListener(this);
+        parentViewHolder.setAdapter(this);
         return parentViewHolder;
       case VIEW_TYPE_CHILD:
-        return onCreateChildViewHolder(parent);
+        CVH childViewHolder = onCreateChildViewHolder(parent);
+        childViewHolder.setAdapter(this);
+        return childViewHolder;
     }
     throw new IllegalArgumentException("unexpected viewType " + viewType);
   }
@@ -161,6 +164,36 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
         expandCollapseListener.onItemCollapsed(position, parentPosition);
       }
     }
+  }
+
+  protected int getParentPosition(int positionOfAll) {
+    if (positionOfAll == 0) {
+      return 0;
+    }
+    int parentPosition = -1;
+    for (int i = 0; i <= positionOfAll; i++) {
+      Object item = allItems.get(i);
+      if (item instanceof ParentItem) {
+        parentPosition++;
+      }
+    }
+    return parentPosition;
+  }
+
+  protected int getChildPosition(int positionOfAll) {
+    if (positionOfAll == 0) {
+      return 0;
+    }
+    int childPosition = 0;
+    for (int i = 0; i <= positionOfAll; i++) {
+      Object item = allItems.get(i);
+      if (item instanceof ParentItem) {
+        childPosition = 0;
+      } else {
+        childPosition++;
+      }
+    }
+    return childPosition;
   }
 
   private int getActualParentPosition(int parentPosition) {

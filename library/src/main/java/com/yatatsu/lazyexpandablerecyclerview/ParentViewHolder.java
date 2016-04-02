@@ -7,6 +7,7 @@ public class ParentViewHolder<P> extends RecyclerView.ViewHolder {
   private boolean expanded;
   private ParentItemExpandCollapseListener expandCollapseListener;
   private ParentItem<P> parentItem;
+  private LazyExpandableRecyclerAdapter adapter;
 
   public interface ParentItemExpandCollapseListener {
     void onExpanded(int position);
@@ -45,12 +46,16 @@ public class ParentViewHolder<P> extends RecyclerView.ViewHolder {
     this.expanded = expanded;
   }
 
-  public void setParentItem(ParentItem<P> item) {
+  void setParentItem(ParentItem<P> item) {
     this.parentItem = item;
   }
 
   public ParentItem<P> getParentItem() {
     return parentItem;
+  }
+
+  void setAdapter(LazyExpandableRecyclerAdapter adapter) {
+    this.adapter = adapter;
   }
 
   protected void expandView() {
@@ -73,6 +78,14 @@ public class ParentViewHolder<P> extends RecyclerView.ViewHolder {
 
   protected void onExpansionToggled(boolean expanded) {
 
+  }
+
+  public int getParentAdapterPosition() {
+    int adapterPosition = getAdapterPosition();
+    if (adapterPosition == RecyclerView.NO_POSITION) {
+      return adapterPosition;
+    }
+    return adapter.getParentPosition(adapterPosition);
   }
 
   protected View.OnClickListener onClickForToggle = new View.OnClickListener() {
