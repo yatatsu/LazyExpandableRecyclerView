@@ -329,8 +329,34 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     notifyItemRangeChanged(initialParentIndex, sizeChanged);
   }
 
+  @SuppressWarnings("unchecked")
   public void notifyParentItemMoved(int fromParentPosition, int toParentPosition) {
-    // TODO
+    int fromParentIndex = getActualParentPosition(fromParentPosition);
+    ParentItem<P> fromParentItem = (ParentItem<P>) allItems.get(fromParentIndex);
+
+    if (!fromParentItem.isExpanded()
+        || expandableDataListener.getChildItemCount(fromParentPosition, fromParentItem.getItem())
+        == 0) {
+      int toParentIndex = getActualParentPosition(toParentPosition);
+      ParentItem<P> toParentItem = (ParentItem<P>) allItems.get(toParentIndex);
+      allItems.remove(fromParentIndex);
+      int childOffset = 0;
+      if (toParentItem.isExpanded()) {
+        childOffset =
+            expandableDataListener.getChildItemCount(toParentPosition, toParentItem.getItem());
+      }
+      allItems.add(toParentIndex + childOffset, fromParentItem);
+      notifyItemMoved(fromParentIndex, toParentIndex + childOffset);
+    } else {
+      int sizeChanged = 0;
+      int childCount =
+          expandableDataListener.getChildItemCount(fromParentPosition, fromParentItem.getItem());
+      for (int i = 0; i < childCount + 1; i++) {
+        allItems.remove(fromParentIndex);
+        sizeChanged++;
+      }
+      notifyItemMoved(fromParentIndex, sizeChanged);
+    }
   }
 
   public void notifyChildItemInserted(int parentPosition, int childPosition) {
@@ -408,7 +434,13 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   }
 
   public void notifyChildItemMoved(int parentPosition, int fromChildPosition, int toChildPosition) {
-    // TODO
+    int parentIndex = getActualParentPosition(parentPosition);
+    ParentItem parentItem = (ParentItem) allItems.get(parentIndex);
+    if (parentItem.isExpanded()) {
+      ChildItem fromChildItem = (ChildItem) allItems.remove(parentIndex + 1 + fromChildPosition);
+      allItems.add(parentIndex + 1 + toChildPosition, fromChildItem);
+      notifyItemMoved(parentIndex + 1 + fromChildPosition, parentIndex + 1 + toChildPosition);
+    }
   }
 
   protected void generateAllItemList() {
