@@ -333,10 +333,10 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
   public void notifyParentItemMoved(int fromParentPosition, int toParentPosition) {
     int fromParentIndex = getActualParentPosition(fromParentPosition);
     ParentItem<P> fromParentItem = (ParentItem<P>) allItems.get(fromParentIndex);
+    int fromParentChildCount =
+        expandableDataListener.getChildItemCount(fromParentPosition, fromParentItem.getItem());
 
-    if (!fromParentItem.isExpanded()
-        || expandableDataListener.getChildItemCount(fromParentPosition, fromParentItem.getItem())
-        == 0) {
+    if (!fromParentItem.isExpanded() || fromParentChildCount == 0) {
       int toParentIndex = getActualParentPosition(toParentPosition);
       ParentItem<P> toParentItem = (ParentItem<P>) allItems.get(toParentIndex);
       allItems.remove(fromParentIndex);
@@ -349,13 +349,29 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
       notifyItemMoved(fromParentIndex, toParentIndex + childOffset);
     } else {
       int sizeChanged = 0;
-      int childCount =
-          expandableDataListener.getChildItemCount(fromParentPosition, fromParentItem.getItem());
-      for (int i = 0; i < childCount + 1; i++) {
-        allItems.remove(fromParentIndex);
+      List<ChildItem> childItems = new ArrayList<>();
+      for (int i = 0; i < fromParentChildCount + 1; i++) {
+        ChildItem childItem = (ChildItem) allItems.remove(fromParentIndex);
+        childItems.add(childItem);
         sizeChanged++;
       }
-      notifyItemMoved(fromParentIndex, sizeChanged);
+      notifyItemRangeRemoved(fromParentIndex, sizeChanged);
+
+      int toParentIndex = getActualParentPosition(toParentPosition);
+      int childOffset = 0;
+      if (toParentIndex != -1) {
+        ParentItem<P> toParentItem = (ParentItem<P>) allItems.get(toParentIndex);
+        if (toParentItem.isExpanded()) {
+          childOffset =
+              expandableDataListener.getChildItemCount(toParentPosition, toParentItem.getItem());
+        }
+      } else {
+        toParentIndex = allItems.size();
+      }
+      allItems.add(toParentIndex + childOffset, fromParentItem);
+      sizeChanged = fromParentChildCount + 1;
+      allItems.addAll(toParentIndex + childOffset + 1, childItems);
+      notifyItemRangeInserted(toParentIndex + childOffset, sizeChanged);
     }
   }
 
@@ -413,8 +429,8 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     ParentItem parentItem = (ParentItem) allItems.get(parentIndex);
     if (parentItem.isExpanded()) {
       C child = expandableDataListener.getChildItem(parentPosition, childPosition, parent);
-      allItems.set(parentIndex + childPosition, new ChildItem<>(parent, child));
-      notifyItemChanged(parentIndex + childPosition);
+      allItems.set(parentIndex + childPosition + 1, new ChildItem<>(parent, child));
+      notifyItemChanged(parentIndex + childPosition + 1);
     }
   }
 
