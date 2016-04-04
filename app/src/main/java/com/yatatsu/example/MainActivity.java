@@ -1,12 +1,14 @@
 package com.yatatsu.example;
 
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import com.yatatsu.example.databinding.ActivityMainBinding;
 import com.yatatsu.example.databinding.ListItemSimpleBinding;
@@ -25,18 +27,28 @@ public class MainActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
     binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-    ExpandableAdapter adapter = new ExpandableAdapter(this, this);
-    List<String> parents = Arrays.asList("a", "b", "c");
+    final ExpandableAdapter adapter = new ExpandableAdapter(this, this);
+    List<String> parents = Arrays.asList("Sample", "Todo");
     adapter.addAll(parents);
+    adapter.setOnItemClickListener(new OnItemClickListener() {
+      @Override public void onItemClick(int parentPosition, int childPosition, String name) {
+        if (name.equals("Check list")) {
+          startActivity(new Intent(MainActivity.this, CheckListActivity.class));
+        }
+      }
+    });
     binding.recyclerView.setAdapter(adapter);
   }
 
   @Override public int getChildItemCount(int parentPosition, String parent) {
-    return 3;
+    return 1;
   }
 
   @Override public String getChildItem(int parentPosition, int childPosition, String parent) {
-    return parent + " child " + childPosition;
+    if (parentPosition == 0) {
+      return "Check list";
+    }
+    return "Todo";
   }
 
   @Override public boolean initiallyExpanded(int parentPosition, String parent) {
@@ -59,15 +71,24 @@ public class MainActivity extends AppCompatActivity
     }
   }
 
+  interface OnItemClickListener {
+    void onItemClick(int parentPosition, int childPosition, String name);
+  }
+
   private class ExpandableAdapter
       extends LazyExpandableRecyclerAdapter<String, String, AlphabetViewHolder, WordViewHolder> {
 
     private final Context context;
+    OnItemClickListener onItemClickListener;
 
     public ExpandableAdapter(Context context,
         @NonNull ExpandableDataListener<String, String> expandableDataListener) {
       super(expandableDataListener);
       this.context = context;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+      this.onItemClickListener = onItemClickListener;
     }
 
     @Override public AlphabetViewHolder onCreateParentViewHolder(ViewGroup parent) {
@@ -83,9 +104,16 @@ public class MainActivity extends AppCompatActivity
       holder.binding.name.setText(item);
     }
 
-    @Override public void onBindChildViewHolder(WordViewHolder holder, int position, String parent,
-        String item) {
+    @Override public void onBindChildViewHolder(WordViewHolder holder, final int position, String parent,
+        final String item) {
       holder.binding.name.setText(item);
+      holder.binding.getRoot().setOnClickListener(new View.OnClickListener() {
+        @Override public void onClick(View v) {
+          if (onItemClickListener != null) {
+            onItemClickListener.onItemClick(getParentPosition(position), getChildPosition(position), item);
+          }
+        }
+      });
     }
   }
 }
