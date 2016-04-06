@@ -47,6 +47,34 @@ public class CheckListActivity extends AppCompatActivity {
         });
     adapter.addAll(loadCategory());
     binding.recyclerView.setAdapter(adapter);
+
+    binding.buttonClear.setOnClickListener(new View.OnClickListener() {
+      @Override public void onClick(View v) {
+        int size = adapter.getItemCount();
+        adapter.clear();
+        adapter.notifyItemRangeRemoved(0, size);
+      }
+    });
+
+    binding.buttonReload.setOnClickListener(new View.OnClickListener() {
+      @Override public void onClick(View v) {
+        int size = adapter.getItemCount();
+        adapter.clear();
+        adapter.notifyItemRangeRemoved(0, size);
+        List<Category> list = loadCategory();
+        adapter.addCategoryList(list);
+        adapter.notifyParentItemRangeInserted(0, list.size());
+      }
+    });
+
+    binding.buttonInsert.setOnClickListener(new View.OnClickListener() {
+      @Override public void onClick(View v) {
+        int position = adapter.getParentItemCount();
+        List<Category> list = loadCategory();
+        adapter.addCategoryList(list);
+        adapter.notifyParentItemRangeInserted(position, list.size());
+      }
+    });
   }
 
   private List<Category> loadCategory() {
@@ -93,6 +121,14 @@ public class CheckListActivity extends AppCompatActivity {
         @NonNull ExpandableDataListener<Category, CategoryItem> expandableDataListener) {
       super(expandableDataListener);
       this.context = context;
+    }
+
+    void addCategoryList(List<Category> list) {
+      parentItems.addAll(list);
+    }
+
+    int getParentItemCount() {
+      return parentItems.size();
     }
 
     @Override public CategoryViewHolder onCreateParentViewHolder(ViewGroup parent) {

@@ -217,9 +217,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
       parentItem.setExpanded(true);
       int count = expandableDataListener.getChildItemCount(parentPosition, parent);
       for (int i = 0; i < count; i++) {
-        sizeChanged += i;
         C child = expandableDataListener.getChildItem(parentPosition, i, parent);
-        allItems.add(sizeChanged, new ChildItem<>(parent, child));
+        allItems.add(position + sizeChanged, new ChildItem<>(parent, child));
+        sizeChanged += i;
       }
     }
     return sizeChanged;
@@ -261,13 +261,23 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
 
   public void notifyParentItemInserted(int parentPosition) {
     P parent = parentItems.get(parentPosition);
-    int parentIndex = getActualParentPosition(parentPosition);
+    int parentIndex;
+    if (parentPosition < parentItems.size() - 1) {
+      parentIndex = getActualParentPosition(parentPosition);
+    } else {
+      parentIndex = allItems.size();
+    }
     int sizeChanged = addParentItem(parentIndex, parentPosition, parent);
     notifyItemRangeInserted(parentIndex, sizeChanged);
   }
 
   public void notifyParentItemRangeInserted(int parentPositionStart, int itemCount) {
-    int initialParentIndex = getActualParentPosition(parentPositionStart);
+    int initialParentIndex;
+    if (parentPositionStart < parentItems.size() - itemCount) {
+      initialParentIndex = getActualParentPosition(parentPositionStart);
+    } else {
+      initialParentIndex = allItems.size();
+    }
 
     int sizeChanged = 0;
     int indexChanged;
