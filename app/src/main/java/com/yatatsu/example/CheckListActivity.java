@@ -45,13 +45,13 @@ public class CheckListActivity extends AppCompatActivity {
             return parentPosition == 0;
           }
         });
-    adapter.addAll(loadCategory());
+    adapter.addAllData(loadCategory());
     binding.recyclerView.setAdapter(adapter);
 
     binding.buttonClear.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         int size = adapter.getItemCount();
-        adapter.clear();
+        adapter.clearData();
         adapter.notifyItemRangeRemoved(0, size);
       }
     });
@@ -59,7 +59,7 @@ public class CheckListActivity extends AppCompatActivity {
     binding.buttonReload.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         int size = adapter.getItemCount();
-        adapter.clear();
+        adapter.clearData();
         adapter.notifyItemRangeRemoved(0, size);
         List<Category> list = loadCategory();
         adapter.addCategoryList(list);

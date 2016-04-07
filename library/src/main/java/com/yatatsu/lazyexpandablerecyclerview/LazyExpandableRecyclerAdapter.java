@@ -41,12 +41,27 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     this.expandableDataListener = expandableDataListener;
   }
 
-  public void clear() {
+  /**
+   * Clear all data.
+   * You should not use with
+   * {@link LazyExpandableRecyclerAdapter#notifyParentItemRemoved(int)}
+   * {@link LazyExpandableRecyclerAdapter#notifyParentItemRangeRemoved(int, int)}
+   */
+  public void clearData() {
     parentItems.clear();
     allItems.clear();
   }
 
-  public void addAll(Collection<P> items) {
+  /**
+   * AddAll and generate all expandable items.
+   * You should not use with
+   * {@link LazyExpandableRecyclerAdapter#notifyParentItemInserted(int)}
+   * {@link LazyExpandableRecyclerAdapter#notifyParentItemRangeInserted(int, int)}
+   * Because every of above write to expandable items.
+   *
+   * @param items parent list.
+   */
+  public void addAllData(Collection<P> items) {
     parentItems.addAll(items);
     generateAllItemList();
   }
@@ -81,8 +96,20 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     throw new IllegalArgumentException("unexpected viewType " + viewType);
   }
 
+  /**
+   * Create view holder for parent item.
+   *
+   * @param parent parent view
+   * @return parent view holder
+   */
   public abstract PVH onCreateParentViewHolder(ViewGroup parent);
 
+  /**
+   * Create view holder for child item.
+   *
+   * @param parent parent view
+   * @return child view holder
+   */
   public abstract CVH onCreateChildViewHolder(ViewGroup parent);
 
   @SuppressWarnings("unchecked") @Override
@@ -105,14 +132,32 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
+  /**
+   * Bind parent item.
+   *
+   * @param holder parent view holder
+   * @param position position of all
+   * @param item parent item
+   */
   public abstract void onBindParentViewHolder(PVH holder, int position, P item);
 
+  /**
+   * Bind child item.
+   *
+   * @param holder child view holder
+   * @param position position of all
+   * @param parent parent item
+   * @param item child item
+   */
   public abstract void onBindChildViewHolder(CVH holder, int position, P parent, C item);
 
   @Override public int getItemCount() {
     return allItems.size();
   }
 
+  /**
+   * @see {@link ParentViewHolder.ParentItemExpandCollapseListener#onExpanded(int)}
+   */
   @SuppressWarnings("unchecked") @Override public void onExpanded(int position) {
     Object item = allItems.get(position);
     if (item instanceof ParentItem) {
@@ -120,6 +165,9 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
+  /**
+   * @see {@link ParentViewHolder.ParentItemExpandCollapseListener#onCollapsed(int)}
+   */
   @SuppressWarnings("unchecked") @Override public void onCollapsed(int position) {
     Object item = allItems.get(position);
     if (item instanceof ParentItem) {
@@ -127,6 +175,12 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
+  /**
+   * Expand parent item. (show children of parent)
+   *
+   * @param item parent item wrapper
+   * @param position position of all
+   */
   protected void expandParentItem(ParentItem<P> item, int position) {
     if (!item.isExpanded()) {
       item.setExpanded(true);
@@ -147,6 +201,12 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
+  /**
+   * Collapse parent item. (hide children of parent)
+   *
+   * @param item parent item wrapper
+   * @param position position of all
+   */
   protected void collapseParentItem(ParentItem<P> item, int position) {
     if (item.isExpanded()) {
       item.setExpanded(false);
@@ -469,6 +529,11 @@ public abstract class LazyExpandableRecyclerAdapter<P, C, PVH extends ParentView
     }
   }
 
+  /**
+   * Generate expandable items from parent items.
+   * Parent items will be wrapped by wrapper class {@link ParentItem},
+   * and Child items will be wrapped by wrapper class {@link ChildItem}
+   */
   protected void generateAllItemList() {
     allItems.clear();
     for (int i = 0, count = parentItems.size(); i < count; i++) {

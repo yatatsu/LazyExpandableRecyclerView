@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity
     binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
     final ExpandableAdapter adapter = new ExpandableAdapter(this, this);
     List<String> parents = Arrays.asList("Sample", "Todo");
-    adapter.addAll(parents);
+    adapter.addAllData(parents);
     adapter.setOnItemClickListener(new OnItemClickListener() {
       @Override public void onItemClick(int parentPosition, int childPosition, String name) {
         if (name.equals("Check list")) {
